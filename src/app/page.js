@@ -1,103 +1,193 @@
-import Image from "next/image";
+// page.js
+"use client";
+
+import { useState, useEffect } from 'react';
+import { supabase } from './supabase/client'; // Adjust the path based on your project structure
+import HomeHeader from './home/home_header';
+import ContactForm from './contact_form/contact_form';
+import ContactOverview from './contact_overview/contact_overview';
+import AllContacts from './view_all_contacts/all_contacts';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [contacts, setContacts] = useState([]);
+  const [currentView, setCurrentView] = useState('home');
+  const [editingContact, setEditingContact] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+  useEffect(() => {
+    fetchContacts();
+  }, []);
+
+  // Clear success message after 3 seconds
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage('');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+
+  const fetchContacts = async () => {
+    const { data, error } = await supabase
+      .from('contacts')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching contacts:', error);
+    } else {
+      setContacts(data || []);
+    }
+  };
+
+  const totalContacts = contacts.length;
+  const activeContacts = contacts.filter(c => c.status === 'Active').length;
+  const corporateContacts = contacts.filter(c => c.business_type === 'Corporate').length;
+  const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const weeklyContacts = contacts.filter(c => new Date(c.created_at) >= oneWeekAgo).length;
+
+  const handleAddContact = () => {
+    setEditingContact(null);
+    setCurrentView('form');
+  };
+
+  const handleViewContacts = () => {
+    setCurrentView('all');
+  };
+
+  const handleEditContact = (contact) => {
+    setEditingContact(contact);
+    setCurrentView('form');
+  };
+
+  const handleDeleteContact = async (contactId) => {
+    try {
+      const { error } = await supabase
+        .from('contacts')
+        .delete()
+        .eq('id', contactId);
+
+      if (error) {
+        console.error('Error deleting contact:', error);
+      } else {
+        await fetchContacts();
+        setSuccessMessage('Contact deleted successfully!');
+      }
+    } catch (error) {
+      console.error('Error deleting contact:', error);
+    }
+  };
+
+  const handleSaveContact = async (contact) => {
+    try {
+      if (contact.id) {
+        // Update existing contact
+        const { error } = await supabase
+          .from('contacts')
+          .update({
+            name: contact.name,
+            phone: contact.phone,
+            business_type: contact.business_type,
+            status: contact.status,
+            address: contact.address,
+          })
+          .eq('id', contact.id);
+
+        if (error) {
+          console.error('Error updating contact:', error);
+        } else {
+          setSuccessMessage('Contact updated successfully!');
+        }
+      } else {
+        // Insert new contact
+        const { error } = await supabase
+          .from('contacts')
+          .insert({
+            name: contact.name,
+            phone: contact.phone,
+            business_type: contact.business_type,
+            status: contact.status,
+            address: contact.address,
+          });
+
+        if (error) {
+          console.error('Error adding contact:', error);
+        } else {
+          setSuccessMessage('Contact added successfully!');
+        }
+      }
+
+      await fetchContacts();
+      setCurrentView('all'); // Navigate to all contacts after successful save
+    } catch (error) {
+      console.error('Error saving contact:', error);
+    }
+  };
+
+  const handleCancel = () => {
+    setCurrentView('home');
+  };
+
+  // Success message component
+  const SuccessMessage = () => {
+    if (!successMessage) return null;
+
+    return (
+      <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        </svg>
+        {successMessage}
+      </div>
+    );
+  };
+
+  switch (currentView) {
+    case 'home':
+      return (
+        <>
+          <SuccessMessage />
+          <HomeHeader
+            totalContacts={totalContacts}
+            activeContacts={activeContacts}
+            corporateContacts={corporateContacts}
+            weeklyContacts={weeklyContacts}
+            onAddContact={handleAddContact}
+            onViewContacts={handleViewContacts}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+          <ContactOverview
+            totalContacts={totalContacts}
+            activeContacts={activeContacts}
+            corporateContacts={corporateContacts}
+            weeklyContacts={weeklyContacts}
+            onAddContact={handleAddContact}
+            onManageContacts={handleViewContacts}
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
+        </>
+      );
+    case 'form':
+      return (
+        <ContactForm
+          onSave={handleSaveContact}
+          onCancel={handleCancel}
+          contact={editingContact}
+        />
+      );
+    case 'all':
+      return (
+        <>
+          <SuccessMessage />
+          <AllContacts
+            contacts={contacts}
+            onBack={() => setCurrentView('home')}
+            onAddContact={handleAddContact}
+            onEditContact={handleEditContact}
+            onDeleteContact={handleDeleteContact}
           />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+        </>
+      );
+    default:
+      return null;
+  }
 }
