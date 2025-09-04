@@ -10,7 +10,17 @@ export const useContactForm = ({ onSave, onCancel, contact = null }) => {
     address: contact?.address || ''
   });
 
-  const { selectedCountry, phoneNumber } = useCountrySelector({ contact });
+  const {
+    selectedCountry,
+    phoneNumber,
+    showCountryDropdown,
+    setShowCountryDropdown,
+    countrySearch,
+    setCountrySearch,
+    filteredCountries,
+    handlePhoneChange,
+    handleCountrySelect
+  } = useCountrySelector({ contact });
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -36,6 +46,13 @@ export const useContactForm = ({ onSave, onCancel, contact = null }) => {
     handleChange,
     selectedCountry,
     phoneNumber,
-    onCancel
+    onCancel,
+    handlePhoneNumberChange: handlePhoneChange,
+    showCountryDropdown,
+    setShowCountryDropdown,
+    countrySearch,
+    setCountrySearch,
+    filteredCountries,
+    handleCountrySelect
   };
 };

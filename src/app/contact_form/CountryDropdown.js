@@ -1,12 +1,14 @@
 "use client";
 
-import { useCountrySelector } from './useCountrySelector';
-
-function CountryDropdown() {
-  const { countrySearch, setCountrySearch, filteredCountries, handleCountrySelect } = useCountrySelector({});
-
+function CountryDropdown({ 
+  countrySearch, 
+  setCountrySearch, 
+  filteredCountries, 
+  handleCountrySelect,
+  className 
+}) {
   return (
-    <div className="absolute top-full left-0 z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1">
+    <div className={`absolute top-full left-0 z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 ${className}`}>
       <div className="p-3 border-b border-gray-200">
         <input
           type="text"

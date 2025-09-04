@@ -6,7 +6,21 @@ import ContactFormFields from './ContactFormFields';
 import FormActions from './FormActions';
 
 function ContactForm({ onSave, onCancel, contact = null }) {
-  const { formData, handleSubmit, handleChange, selectedCountry, phoneNumber, onCancel: formOnCancel } = useContactForm({ onSave, onCancel, contact });
+  const { 
+    formData, 
+    handleSubmit, 
+    handleChange, 
+    selectedCountry, 
+    phoneNumber, 
+    onCancel: formOnCancel, 
+    handlePhoneNumberChange,
+    showCountryDropdown,
+    setShowCountryDropdown,
+    countrySearch,
+    setCountrySearch,
+    filteredCountries,
+    handleCountrySelect 
+  } = useContactForm({ onSave, onCancel, contact });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -19,6 +33,13 @@ function ContactForm({ onSave, onCancel, contact = null }) {
               handleChange={handleChange}
               selectedCountry={selectedCountry}
               phoneNumber={phoneNumber}
+              handlePhoneNumberChange={handlePhoneNumberChange}
+              showCountryDropdown={showCountryDropdown}
+              setShowCountryDropdown={setShowCountryDropdown}
+              countrySearch={countrySearch}
+              setCountrySearch={setCountrySearch}
+              filteredCountries={filteredCountries}
+              handleCountrySelect={handleCountrySelect}
             />
             <FormActions onCancel={formOnCancel} />
           </form>

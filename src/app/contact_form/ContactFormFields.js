@@ -2,7 +2,22 @@
 
 import PhoneInput from './PhoneInput';
 
-function ContactFormFields({ formData, handleChange, selectedCountry, phoneNumber }) {
+function ContactFormFields({ 
+  formData, 
+  handleChange, 
+  selectedCountry, 
+  phoneNumber, 
+  handlePhoneNumberChange,
+  showCountryDropdown,
+  setShowCountryDropdown,
+  countrySearch,
+  setCountrySearch,
+  filteredCountries,
+  handleCountrySelect 
+}) {
+  // Debug log to check if the function is being passed
+  console.log('handlePhoneNumberChange type:', typeof handlePhoneNumberChange);
+  
   return (
     <>
       <div className="grid md:grid-cols-2 gap-6 mb-6">
@@ -22,7 +37,17 @@ function ContactFormFields({ formData, handleChange, selectedCountry, phoneNumbe
           />
         </div>
         {/* Phone Number with Country Code */}
-        <PhoneInput selectedCountry={selectedCountry} phoneNumber={phoneNumber} />
+        <PhoneInput 
+          selectedCountry={selectedCountry} 
+          phoneNumber={phoneNumber} 
+          handlePhoneNumberChange={handlePhoneNumberChange}
+          showCountryDropdown={showCountryDropdown}
+          setShowCountryDropdown={setShowCountryDropdown}
+          countrySearch={countrySearch}
+          setCountrySearch={setCountrySearch}
+          filteredCountries={filteredCountries}
+          handleCountrySelect={handleCountrySelect}
+        />
       </div>
 
       <div className="grid md:grid-cols-2 gap-6 mb-6">

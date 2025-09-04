@@ -1,10 +1,26 @@
 "use client";
 
-import { useCountrySelector } from './useCountrySelector';
 import CountryDropdown from './CountryDropdown';
 
-function PhoneInput({ selectedCountry, phoneNumber }) {
-  const { showCountryDropdown, setShowCountryDropdown, handlePhoneChange } = useCountrySelector({});
+function PhoneInput({ 
+  selectedCountry, 
+  phoneNumber, 
+  handlePhoneNumberChange,
+  showCountryDropdown,
+  setShowCountryDropdown,
+  countrySearch,
+  setCountrySearch,
+  filteredCountries,
+  handleCountrySelect 
+}) {
+  const handleInputChange = (e) => {
+    const numericValue = e.target.value.replace(/\D/g, ''); // Allow only digits
+    
+    // Call the shared handler with filtered value (handles country detection if needed)
+    handlePhoneNumberChange({ ...e, target: { ...e.target, value: numericValue } });
+    
+    // Removed: handleChange(syntheticEvent) - not needed, as explained
+  };
 
   return (
     <div>
@@ -31,15 +47,22 @@ function PhoneInput({ selectedCountry, phoneNumber }) {
         {/* Phone Number Input */}
         <input
           type="tel"
+          name="phone"
           value={phoneNumber}
-          onChange={handlePhoneChange}
+          onChange={handleInputChange}
           placeholder="Enter phone number..."
           className="flex-1 px-4 py-3 border border-t-0 sm:border-t sm:border-l-0 border-gray-300 rounded-b-lg sm:rounded-b-none sm:rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors text-gray-900 placeholder:text-gray-700 w-full"
           required
         />
         {/* Country Dropdown */}
         {showCountryDropdown && (
-          <CountryDropdown className="absolute top-full left-0 w-full sm:w-auto z-10" /> 
+          <CountryDropdown 
+            countrySearch={countrySearch}
+            setCountrySearch={setCountrySearch}
+            filteredCountries={filteredCountries}
+            handleCountrySelect={handleCountrySelect}
+            className="absolute top-full left-0 w-full sm:w-auto z-10" 
+          />
         )}
       </div>
     </div>
