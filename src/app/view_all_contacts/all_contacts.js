@@ -1,4 +1,3 @@
-// all_contacts.js
 "use client";
 
 import { useState } from 'react';
@@ -9,6 +8,7 @@ function all_contacts({ contacts, onBack, onAddContact, onEditContact, onDeleteC
   const [selectedStatus, setSelectedStatus] = useState('All Status');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [contactToDelete, setContactToDelete] = useState(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const filteredContacts = contacts.filter(c => {
     if (search && !c.name.toLowerCase().includes(search.toLowerCase())) return false;
@@ -45,9 +45,29 @@ function all_contacts({ contacts, onBack, onAddContact, onEditContact, onDeleteC
           Back to Dashboard
         </button>
         <h1 className="text-xl font-bold text-blue-900">All Contacts</h1>
-        <button onClick={onAddContact} className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700">
-          + Add Contact
-        </button>
+        <div className="relative">
+          <button 
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="text-blue-700 hover:text-blue-900 p-1"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          {isMenuOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+              <button 
+                onClick={() => {
+                  onAddContact();
+                  setIsMenuOpen(false);
+                }}
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+              >
+                Add Contact
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <p className="text-blue-700 text-center py-2 font-medium">Manage your business contacts</p>
